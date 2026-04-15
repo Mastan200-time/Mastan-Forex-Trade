@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ForexPulse — Live Trading Signals</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#080c14;--bg2:#0f1520;--bg3:#161d2e;--bg4:#1e2740;--t1:#eef0f4;--t2:#94a3b8;--t3:#64748b;--tw:#fff;
+--g:#22c55e;--gbg:rgba(34,197,94,.1);--gbd:rgba(34,197,94,.3);
+--r:#ef4444;--rbg:rgba(239,68,68,.1);--rbd:rgba(239,68,68,.3);
+--y:#eab308;--ybg:rgba(234,179,8,.1);
+--b:#3b82f6;--p:#a855f7;
+--bd:#1e293b;--mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif}
+html{font-size:15px}
+body{font-family:var(--sans);background:var(--bg);color:var(--t1);line-height:1.5;min-height:100vh}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#334155;border-radius:9px}
+
+/* HEADER */
+.H{background:var(--bg2);border-bottom:1px solid var(--bd);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.H h1{font-size:1.35rem;font-weight:900;background:linear-gradient(135deg,#3b82f6,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.H .sub{font-size:.7rem;color:var(--t3);margin-top:-2px}
+.H .live{display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--g);font-weight:600}
+.H .dot{width:8px;height:8px;background:var(--g);border-radius:50%;animation:p 2s infinite}
+@keyframes p{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.4)}50%{box-shadow:0 0 0 8px rgba(34,197,94,0)}}
+.tabs{display:flex;gap:3px}
+.tabs button{background:0;border:1px solid transparent;color:var(--t3);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;font-family:var(--sans);transition:.15s}
+.tabs button:hover{color:var(--t1);background:var(--bg3)}
+.tabs button.on{background:var(--b);color:#fff}
+
+/* MAIN */
+.M{padding:20px 28px;max-width:1500px;margin:0 auto}
+
+/* ALERT BAR */
+.alert{background:linear-gradient(90deg,rgba(234,179,8,.06),rgba(239,68,68,.06));border:1px solid rgba(234,179,8,.2);border-radius:10px;padding:12px 18px;margin-bottom:22px;font-size:.8rem;color:var(--y);display:flex;align-items:center;gap:10px;line-height:1.5}
+.alert b{color:var(--t1)}
+
+/* SECTION TITLE */
+.ST{display:flex;align-items:center;gap:10px;margin:0 0 16px;padding-bottom:10px;border-bottom:1px solid var(--bd)}
+.ST h2{font-size:1.2rem;font-weight:900}
+.ST .pill{padding:3px 12px;border-radius:99px;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px}
+.ST .gp{background:var(--gbg);color:var(--g)}
+.ST .rp{background:var(--rbg);color:var(--r)}
+
+/* SIGNAL CARDS */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;margin-bottom:32px}
+.C{background:var(--bg3);border:1px solid var(--bd);border-radius:14px;overflow:hidden;transition:.2s;cursor:pointer}
+.C:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(0,0,0,.35)}
+.C.buy{border-top:3px solid var(--g)}.C.buy:hover{border-color:var(--g)}
+.C.sell{border-top:3px solid var(--r)}.C.sell:hover{border-color:var(--r)}
+
+.Ctop{padding:16px 16px 10px;display:flex;justify-content:space-between;align-items:flex-start}
+.Cpair{font-size:1.15rem;font-weight:900;font-family:var(--mono);color:var(--tw)}
+.Cbadge{padding:4px 12px;border-radius:99px;font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px}
+.Cbadge.gb{background:var(--gbg);color:var(--g)}.Cbadge.rb{background:var(--rbg);color:var(--r)}
+
+.Cwhy{padding:0 16px 10px;font-size:.82rem;color:var(--t2);line-height:1.5}
+.Cwhy b{color:var(--y)}
+
+/* Confidence */
+.Cconf{padding:0 16px 12px}
+.Cconf-top{display:flex;justify-content:space-between;font-size:.65rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.Cconf-top span:last-child{font-weight:700}
+.bar{height:6px;background:var(--bd);border-radius:9px;overflow:hidden}
+.fill{height:100%;border-radius:9px;transition:width .6s}
+.fill.hi{background:linear-gradient(90deg,var(--g),#4ade80)}
+.fill.md{background:linear-gradient(90deg,var(--y),#facc15)}
+.fill.lo{background:linear-gradient(90deg,var(--r),#f87171)}
+
+/* Price row */
+.Cprices{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid var(--bd);background:rgba(0,0,0,.12)}
+.Cp{padding:10px;text-align:center;border-right:1px solid var(--bd)}
+.Cp:last-child{border-right:0}
+.Cp .l{font-size:.58rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.Cp .v{font-size:.92rem;font-weight:700;font-family:var(--mono)}
+.Cp .v.gv{color:var(--g)}.Cp .v.rv{color:var(--r)}
+
+/* Profit row */
+.Cprofit{padding:10px 16px;background:rgba(34,197,94,.04);border-top:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center}
+.Cprofit .pl{font-size:.65rem;color:var(--t3);text-transform:uppercase}
+.Cprofit .pv{font-size:1rem;font-weight:800;font-family:var(--mono);color:var(--g)}
+.Cprofit .pp{font-size:.72rem;color:var(--t2);margin-left:6px}
+
+/* LIVE PRICES BAR */
+.prices-bar{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;margin-bottom:20px}
+.pb-item{background:var(--bg3);border:1px solid var(--bd);border-radius:10px;padding:10px 16px;min-width:160px;flex-shrink:0}
+.pb-pair{font-size:.78rem;font-weight:700;font-family:var(--mono);color:var(--tw)}
+.pb-price{font-size:1.1rem;font-weight:700;font-family:var(--mono);margin:4px 0 2px}
+.pb-chg{font-size:.72rem;font-weight:600;font-family:var(--mono)}
+
+/* HOW IT WORKS */
+.how{background:var(--bg3);border:1px solid var(--bd);border-radius:14px;padding:22px;margin-bottom:24px}
+.how h3{font-size:1rem;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.steps{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.step{background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:16px;text-align:center}
+.step .n{width:30px;height:30px;background:var(--b);color:#fff;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:.82rem;margin-bottom:8px}
+.step h4{font-size:.82rem;font-weight:700;margin-bottom:4px}
+.step p{font-size:.72rem;color:var(--t2);line-height:1.4}
+
+/* PORTFOLIO */
+.pstats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.ps{background:var(--bg3);border:1px solid var(--bd);border-radius:10px;padding:16px;text-align:center}
+.ps .sl{font-size:.65rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.ps .sv{font-size:1.35rem;font-weight:800;font-family:var(--mono)}
+.pgrid{display:grid;grid-template-columns:1fr 320px;gap:16px}
+.tform{background:var(--bg3);border:1px solid var(--bd);border-radius:14px;padding:20px;margin-bottom:16px}
+.tform h3{font-size:.95rem;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.fg{margin-bottom:12px}
+.fg label{display:block;font-size:.7rem;color:var(--t3);margin-bottom:5px;font-weight:500}
+.fg select,.fg input{width:100%;padding:9px 12px;background:var(--bg);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:.85rem;font-family:var(--sans)}
+.fg select:focus,.fg input:focus{outline:0;border-color:var(--b)}
+.tbtns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.tbtns button{padding:10px;border:0;border-radius:10px;font-weight:800;font-size:.85rem;cursor:pointer;font-family:var(--sans);transition:.15s}
+.tbtns .bb{background:var(--g);color:#fff}.tbtns .bb:hover{background:#16a34a}
+.tbtns .bs{background:var(--r);color:#fff}.tbtns .bs:hover{background:#dc2626}
+.ptbl{width:100%;border-collapse:collapse}
+.ptbl th{font-size:.65rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;padding:10px;text-align:left;border-bottom:1px solid var(--bd)}
+.ptbl td{padding:10px;font-size:.8rem;border-bottom:1px solid var(--bd);font-family:var(--mono)}
+.ptbl tr:hover{background:var(--bg4)}
+.xbtn{background:var(--rbg);color:var(--r);border:1px solid var(--rbd);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:.7rem;font-weight:600;font-family:var(--sans)}
+.xbtn:hover{background:var(--r);color:#fff}
+
+/* POPUP */
+.ov{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:100}
+.pop{background:var(--bg2);border:1px solid #334155;border-radius:18px;padding:28px;max-width:480px;width:92%;animation:su .25s}
+.pop.bp{border-top:3px solid var(--g)}.pop.sp{border-top:3px solid var(--r)}
+@keyframes su{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+.pop h2{font-size:1.15rem;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.pd{margin-bottom:12px}.pd label{font-size:.65rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px}
+.pd .pv{font-size:.92rem;color:var(--t1)}
+.pacts{display:flex;gap:10px;margin-top:20px}
+.pacts button{flex:1;padding:10px;border-radius:10px;font-weight:700;cursor:pointer;font-size:.85rem;font-family:var(--sans);border:0;transition:.15s}
+.btn2{background:var(--bg3);color:var(--t2);border:1px solid var(--bd)!important}
+
+.empty{text-align:center;padding:36px 20px;color:var(--t3)}
+.empty .ei{font-size:2.2rem;margin-bottom:10px}
+.empty p{font-size:.82rem;max-width:280px;margin:0 auto;line-height:1.5}
+
+.ftr{background:var(--bg2);border-top:1px solid var(--bd);padding:16px 28px;text-align:center}
+.ftr p{font-size:.7rem;color:var(--t3);line-height:1.6}
+.ftr .d{color:var(--y);font-weight:600}
+
+.loading{display:flex;flex-direction:column;align-items:center;padding:60px;color:var(--t3)}
+.spin{width:32px;height:32px;border:3px solid var(--bd);border-top-color:var(--b);border-radius:50%;animation:sp .7s linear infinite;margin-bottom:10px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+@media(max-width:1100px){.pgrid{grid-template-columns:1fr}.pstats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.H{flex-direction:column;gap:8px;padding:10px 16px}.grid{grid-template-columns:1fr}.pstats{grid-template-columns:1fr 1fr}.M{padding:14px 16px}.steps{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<header class="H">
+  <div><h1>📈 ForexPulse</h1><div class="sub">Live Trading Signals • Real Market Prices</div></div>
+  <div class="tabs">
+    <button id="t1" class="on" onclick="tab('sig')">🎯 Signals</button>
+    <button id="t2" onclick="tab('port')">💼 Portfolio</button>
+  </div>
+  <div class="live"><span class="dot"></span>LIVE PRICES</div>
+</header>
+
+<main class="M">
+  <!-- LOADING -->
+  <div id="loader" class="loading"><div class="spin"></div><p>Fetching live forex prices...</p></div>
+
+  <!-- SIGNALS VIEW -->
+  <div id="v1" style="display:none">
+    <div class="alert">⚠️ <div><b>Educational Tool — Not Financial Advice.</b> Uses real market prices for learning. Never trade with money you can't afford to lose.</div></div>
+
+    <!-- Live Prices Bar -->
+    <div id="pbar" class="prices-bar"></div>
+
+    <!-- How It Works -->
+    <div class="how">
+      <h3>🎓 How This Works (4 Simple Steps)</h3>
+      <div class="steps">
+        <div class="step"><div class="n">1</div><h4>Live Prices</h4><p>We fetch real forex prices from the market every time you open this page</p></div>
+        <div class="step"><div class="n">2</div><h4>Smart Analysis</h4><p>Our algorithm scores each pair using RSI, MACD & Moving Averages</p></div>
+        <div class="step"><div class="n">3</div><h4>Clear Picks</h4><p>Top 5 BUY and Top 5 SELL — with entry, target, stop-loss & expected profit</p></div>
+        <div class="step"><div class="n">4</div><h4>Practice Free</h4><p>Use $10,000 virtual money in the Portfolio tab before risking real money</p></div>
+      </div>
+    </div>
+
+    <!-- TOP 5 BUY -->
+    <div class="ST"><span style="font-size:1.3rem">🟢</span><h2 style="color:var(--g)">Top 5 — BUY NOW</h2><span class="pill gp">Bullish</span></div>
+    <div id="buys" class="grid"></div>
+
+    <!-- TOP 5 SELL -->
+    <div class="ST"><span style="font-size:1.3rem">🔴</span><h2 style="color:var(--r)">Top 5 — SELL NOW</h2><span class="pill rp">Bearish</span></div>
+    <div id="sells" class="grid"></div>
+  </div>
+
+  <!-- PORTFOLIO VIEW -->
+  <div id="v2" style="display:none">
+    <div class="alert">⚠️ <div><b>Simulated Trading Only</b> — Virtual $10,000. No real money at risk. Practice here first!</div></div>
+    <div id="pmsg"></div>
+    <div id="psts" class="pstats"></div>
+    <div class="pgrid">
+      <div>
+        <div style="background:var(--bg3);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:16px">
+          <div style="font-size:.92rem;font-weight:700;margin-bottom:12px">📂 Open Positions (<span id="pcnt">0</span>)</div>
+          <div id="pbox"></div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--bd);border-radius:14px;padding:16px">
+          <div style="font-size:.92rem;font-weight:700;margin-bottom:12px">📜 Trade History</div>
+          <div id="hbox"></div>
+        </div>
+      </div>
+      <div>
+        <div class="tform">
+          <h3>🔄 New Trade</h3>
+          <div class="fg"><label>Currency Pair</label><select id="tp"></select></div>
+          <div class="fg"><label>Quantity (units)</label><input type="number" id="tq" value="1000" min="100" step="100"></div>
+          <div style="font-size:.7rem;color:var(--t3);margin-bottom:8px">💡 1,000 = micro lot • 10,000 = mini lot</div>
+          <div class="tbtns"><button class="bb" onclick="doTrade('BUY')">▲ BUY</button><button class="bs" onclick="doTrade('SELL')">▼ SELL</button></div>
+        </div>
+        <div style="background:rgba(234,179,8,.04);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:16px">
+          <div style="font-size:.92rem;font-weight:700;margin-bottom:10px">📚 Beginner Tips</div>
+          <div style="font-size:.78rem;color:var(--t2);line-height:1.6">
+            <p style="margin-bottom:8px"><b style="color:var(--y)">🎯 Rule #1:</b> Never risk more than 2% of your account on one trade.</p>
+            <p style="margin-bottom:8px"><b style="color:var(--b)">📊 Rule #2:</b> Wait for 2-3 indicators to agree before trading.</p>
+            <p><b style="color:var(--p)">🧠 Rule #3:</b> Stick to your plan. Emotions = losses.</p>
+          </div>
+        </div>
+        <button onclick="resetP()" style="width:100%;padding:10px;background:var(--bg3);border:1px solid var(--bd);border-radius:10px;color:var(--t3);cursor:pointer;font-size:.78rem;font-family:var(--sans)">🔄 Reset Portfolio to $10,000</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="ftr">
+  <p class="d">⚠️ Educational tool only — not financial advice.</p>
+  <p>Forex trading involves substantial risk. All signals are algorithm-generated. Past performance ≠ future results.</p>
+  <p style="margin-top:4px">ForexPulse © 2026 — Real prices. Smart signals. Safe practice.</p>
+</footer>
+
+<div id="ov" class="ov" onclick="xPop()"><div id="pop" class="pop" onclick="event.stopPropagation()"></div></div>
+
+<script>
+// ============================================================
+// ForexPulse v3 — LIVE DATA ENGINE
+// ============================================================
+
+const PAIRS=['EUR/USD','GBP/USD','USD/JPY','AUD/USD','USD/CAD','USD/CHF','NZD/USD','EUR/GBP'];
+const API_URL='https://open.er-api.com/v6/latest/USD';
+const HIST_URL='https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@{DATE}/v1/currencies/usd.json';
+
+let liveRates={};
+let histData={};
+let allScored=[];
+let port=JSON.parse(localStorage.getItem('fp3'))||{b:10000,i:10000,pos:[],hist:[],n:1};
+
+// === FETCH LIVE PRICES ===
+async function fetchLive(){
+  try{
+    const r=await fetch(API_URL);
+    const d=await r.json();
+    if(d.result==='success'){
+      const R=d.rates;
+      liveRates={
+        'EUR/USD':+(1/R.EUR).toFixed(5),
+        'GBP/USD':+(1/R.GBP).toFixed(5),
+        'USD/JPY':+R.JPY.toFixed(3),
+        'AUD/USD':+(1/R.AUD).toFixed(5),
+        'USD/CAD':+R.CAD.toFixed(5),
+        'USD/CHF':+R.CHF.toFixed(5),
+        'NZD/USD':+(1/R.NZD).toFixed(5),
+        'EUR/GBP':+(R.GBP/R.EUR).toFixed(5)
+      };
+      return true;
+    }
+  }catch(e){console.error('Live fetch error:',e)}
+  return false;
+}
+
+// === FETCH HISTORICAL (for indicators) ===
+async function fetchHist(){
+  const dates=[];
+  const now=new Date();
+  for(let i=0;i<30;i++){
+    const d=new Date(now);d.setDate(d.getDate()-i);
+    dates.push(d.toISOString().split('T')[0]);
+  }
+  // Fetch last 30 days
+  const results=[];
+  for(const date of dates){
+    try{
+      const url=HIST_URL.replace('{DATE}',date);
+      const r=await fetch(url);
+      const d=await r.json();
+      if(d.usd){
+        const R=d.usd;
+        results.push({
+          date:d.date||date,
+          rates:{
+            'EUR/USD':1/R.eur,'GBP/USD':1/R.gbp,'USD/JPY':R.jpy,
+            'AUD/USD':1/R.aud,'USD/CAD':R.cad,'USD/CHF':R.chf,
+            'NZD/USD':1/R.nzd,'EUR/GBP':R.gbp/R.eur
+          }
+        });
+      }
+    }catch(e){}
+  }
+  results.sort((a,b)=>a.date.localeCompare(b.date));
+  // Build per-pair arrays
+  PAIRS.forEach(p=>{histData[p]=results.map(r=>({date:r.date,close:r.rates[p]})).filter(x=>x.close)});
+}
+
+// === INDICATORS ===
+function rsi(c,p=14){
+  const r=Array(c.length).fill(null);if(c.length<p+1)return r;
+  let ag=0,al=0;
+  for(let i=1;i<=p;i++){const d=c[i]-c[i-1];d>0?ag+=d:al+=Math.abs(d)}
+  ag/=p;al/=p;r[p]=al===0?100:100-100/(1+ag/al);
+  for(let i=p+1;i<c.length;i++){const d=c[i]-c[i-1];ag=(ag*(p-1)+(d>0?d:0))/p;al=(al*(p-1)+(d<0?Math.abs(d):0))/p;r[i]=al===0?100:100-100/(1+ag/al)}
+  return r;
+}
+function ema(d,p){const e=[d[0]],k=2/(p+1);for(let i=1;i<d.length;i++)e[i]=d[i]*k+e[i-1]*(1-k);return e}
+function sma(d,p){const s=Array(d.length).fill(null);for(let i=p-1;i<d.length;i++){let sum=0;for(let j=i-p+1;j<=i;j++)sum+=d[j];s[i]=sum/p}return s}
+
+// === SCORE & RANK ===
+function scoreAll(){
+  allScored=[];
+  PAIRS.forEach(pair=>{
+    const price=liveRates[pair];if(!price)return;
+    const hist=histData[pair]||[];
+    const closes=hist.map(h=>h.close);
+    // Add current live price
+    closes.push(price);
+    const n=closes.length;
+    if(n<5)return;
+
+    const jpy=pair.includes('JPY'),dp=jpy?3:5;
+    const rsiArr=rsi(closes);
+    const e12=ema(closes,12),e26=ema(closes,26);
+    const macdLine=closes.map((_,i)=>e12[i]-e26[i]);
+    const sigLine=ema(macdLine,9);
+    const sma20=sma(closes,20),sma50=sma(closes,Math.min(50,n));
+
+    const lastRSI=rsiArr[n-1];
+    const lastMACD=macdLine[n-1],lastSig=sigLine[n-1];
+    const lastSMA20=sma20[n-1],lastSMA50=sma50[n-1];
+    const prevClose=closes[n-2]||closes[0];
+    const chg=((price-prevClose)/prevClose*100);
+
+    let bs=50,ss=50,br=[],sr=[];
+
+    // RSI
+    if(lastRSI!==null){
+      if(lastRSI<30){bs+=25;br.push(`RSI is oversold at ${lastRSI.toFixed(0)} — price likely to bounce UP 📈`)}
+      else if(lastRSI<40){bs+=12;br.push(`RSI at ${lastRSI.toFixed(0)} — nearing oversold zone`)}
+      else if(lastRSI>70){ss+=25;sr.push(`RSI is overbought at ${lastRSI.toFixed(0)} — price likely to pull back DOWN 📉`)}
+      else if(lastRSI>60){ss+=12;sr.push(`RSI at ${lastRSI.toFixed(0)} — nearing overbought zone`)}
+    }
+
+    // MACD
+    if(lastMACD!==undefined&&lastSig!==undefined){
+      if(lastMACD>lastSig){bs+=15;br.push('MACD shows bullish momentum ✅')}
+      else{ss+=15;sr.push('MACD shows bearish momentum ✅')}
+      if(n>1){
+        if(macdLine[n-2]<=sigLine[n-2]&&lastMACD>lastSig){bs+=12;br.push('⭐ Fresh MACD bullish crossover!')}
+        if(macdLine[n-2]>=sigLine[n-2]&&lastMACD<lastSig){ss+=12;sr.push('⭐ Fresh MACD bearish crossover!')}
+      }
+    }
+
+    // SMA
+    if(lastSMA20&&lastSMA50){
+      if(lastSMA20>lastSMA50){bs+=10;br.push('Short-term trend is UP (20-day > 50-day avg)')}
+      else{ss+=10;sr.push('Short-term trend is DOWN (20-day < 50-day avg)')}
+      if(price>lastSMA20){bs+=8;br.push('Price is above its 20-day average')}
+      else{ss+=8;sr.push('Price is below its 20-day average')}
+    }
+
+    // Momentum
+    if(chg>0.15){bs+=5;br.push(`Up ${chg.toFixed(2)}% today — positive momentum`)}
+    if(chg<-0.15){ss+=5;sr.push(`Down ${Math.abs(chg).toFixed(2)}% today — negative momentum`)}
+
+    bs=Math.min(95,Math.max(10,bs));
+    ss=Math.min(95,Math.max(10,ss));
+
+    // Targets based on recent volatility
+    const recent=closes.slice(-10);
+    const avgRange=recent.reduce((s,c,i)=>i>0?s+Math.abs(c-recent[i-1]):s,0)/(recent.length-1);
+    const pip=jpy?0.01:0.0001;
+    const bt=+(price+avgRange*2).toFixed(dp);
+    const bsl=+(price-avgRange*1.2).toFixed(dp);
+    const st=+(price-avgRange*2).toFixed(dp);
+    const ssl=+(price+avgRange*1.2).toFixed(dp);
+    const bpips=Math.round((bt-price)/pip);
+    const spips=Math.round((price-st)/pip);
+
+    allScored.push({pair,price,dp,chg,lastRSI,lastMACD,lastSig,lastSMA20,lastSMA50,
+      bs,ss,br,sr,bt,bsl,st,ssl,bpips,spips});
+  });
+}
+
+// === RENDER ===
+function renderCard(s,type){
+  const buy=type==='BUY';
+  const score=buy?s.bs:s.ss;
+  const reasons=buy?s.br:s.sr;
+  const target=buy?s.bt:s.st;
+  const stop=buy?s.bsl:s.ssl;
+  const pips=buy?s.bpips:s.spips;
+  const cls=score>=70?'hi':score>=50?'md':'lo';
+  const clbl=score>=70?'HIGH':score>=50?'MEDIUM':'LOW';
+  const why=reasons[0]||'Multiple indicators point this direction';
+  const rj=JSON.stringify(reasons).replace(/"/g,'&quot;');
+
+  return`<div class="C ${buy?'buy':'sell'}" onclick="sPop('${s.pair}','${type}','${s.price}','${target}','${stop}','${pips}','${score}',this)" data-reasons="${rj}">
+    <div class="Ctop"><div class="Cpair">${s.pair}</div><div class="Cbadge ${buy?'gb':'rb'}">${buy?'▲ BUY NOW':'▼ SELL NOW'}</div></div>
+    <div class="Cwhy"><b>Why?</b> ${why}</div>
+    <div class="Cconf"><div class="Cconf-top"><span>Confidence</span><span style="color:${score>=70?'var(--g)':score>=50?'var(--y)':'var(--r)'}">${score}% ${clbl}</span></div><div class="bar"><div class="fill ${cls}" style="width:${score}%"></div></div></div>
+    <div class="Cprices">
+      <div class="Cp"><div class="l">Entry Price</div><div class="v">${s.price.toFixed(s.dp)}</div></div>
+      <div class="Cp"><div class="l">🎯 Target</div><div class="v gv">${target.toFixed(s.dp)}</div></div>
+      <div class="Cp"><div class="l">🛑 Stop Loss</div><div class="v rv">${stop.toFixed(s.dp)}</div></div>
+    </div>
+    <div class="Cprofit"><div class="pl">Expected Profit</div><div><span class="pv">+${pips} pips</span></div></div>
+  </div>`;
+}
+
+function renderAll(){
+  scoreAll();
+  // Prices bar
+  document.getElementById('pbar').innerHTML=PAIRS.map(p=>{
+    const pr=liveRates[p];if(!pr)return'';
+    const s=allScored.find(x=>x.pair===p);
+    const chg=s?s.chg:0;const pos=chg>=0;
+    const dp=p.includes('JPY')?3:5;
+    return`<div class="pb-item"><div class="pb-pair">${p}</div><div class="pb-price" style="color:${pos?'var(--g)':'var(--r)'}">${pr.toFixed(dp)}</div><div class="pb-chg" style="color:${pos?'var(--g)':'var(--r)'}">${pos?'▲':'▼'} ${Math.abs(chg).toFixed(3)}%</div></div>`;
+  }).join('');
+
+  // Top 5 Buy
+  const top5B=[...allScored].sort((a,b)=>b.bs-a.bs).slice(0,5);
+  document.getElementById('buys').innerHTML=top5B.map(s=>renderCard(s,'BUY')).join('');
+
+  // Top 5 Sell
+  const top5S=[...allScored].sort((a,b)=>b.ss-a.ss).slice(0,5);
+  document.getElementById('sells').innerHTML=top5S.map(s=>renderCard(s,'SELL')).join('');
+}
+
+// === POPUP ===
+function sPop(pair,type,price,target,stop,pips,score,el){
+  const buy=type==='BUY';
+  let reasons;
+  try{reasons=JSON.parse(el.dataset.reasons)}catch(e){reasons=[]}
+  const p=document.getElementById('pop');
+  p.className=`pop ${buy?'bp':'sp'}`;
+  p.innerHTML=`
+    <h2>${buy?'🟢':'🔴'} ${type} — ${pair}</h2>
+    <div class="pd"><label>Live Price</label><div class="pv" style="font-family:var(--mono);font-size:1.05rem">${price}</div></div>
+    <div class="pd"><label>🎯 Take Profit At</label><div class="pv" style="color:var(--g);font-family:var(--mono)">${target}</div></div>
+    <div class="pd"><label>🛑 Stop Loss At</label><div class="pv" style="color:var(--r);font-family:var(--mono)">${stop}</div></div>
+    <div class="pd"><label>Expected Profit</label><div class="pv" style="color:var(--g);font-weight:700">+${pips} pips</div></div>
+    <div class="pd"><label>Confidence</label><div class="pv">${score}% — ${score>=70?'💪 HIGH':score>=50?'👍 MEDIUM':'🤏 LOW'}</div></div>
+    <div class="pd"><label>Why This Signal?</label><div style="font-size:.82rem;color:var(--t2);line-height:1.6">${reasons.map(r=>'<div style="margin-bottom:4px">✅ '+r+'</div>').join('')}</div></div>
+    <div style="font-size:.72rem;color:var(--y);background:var(--ybg);padding:8px 10px;border-radius:8px;margin-top:12px;line-height:1.4">⚠️ Educational signal only. Always use a stop-loss. Never risk more than 2% of your account.</div>
+    <div class="pacts"><button class="btn2" onclick="xPop()">Close</button><button style="background:${buy?'var(--g)':'var(--r)'};color:#fff" onclick="sigTrade('${pair}','${type}');xPop()">📝 Practice ${type}</button></div>`;
+  document.getElementById('ov').style.display='flex';
+}
+function xPop(){document.getElementById('ov').style.display='none'}
+
+// === TABS ===
+function tab(t){
+  document.getElementById('v1').style.display=t==='sig'?'block':'none';
+  document.getElementById('v2').style.display=t==='port'?'block':'none';
+  document.getElementById('t1').className=t==='sig'?'on':'';
+  document.getElementById('t2').className=t==='port'?'on':'';
+  if(t==='port')renderP();
+}
+
+// === PORTFOLIO ===
+function saveP(){localStorage.setItem('fp3',JSON.stringify(port))}
+function gp(pair){return liveRates[pair]||0}
+
+function doTrade(type){
+  const pair=document.getElementById('tp').value,qty=+document.getElementById('tq').value;
+  if(!qty||qty<100){pmsg('e','❌ Min 100 units');return}
+  const price=gp(pair);if(!price){pmsg('e','❌ No price data');return}
+  const cost=price*qty;
+  if(type==='BUY'&&cost>port.b){pmsg('e',`❌ Need $${cost.toFixed(2)}, have $${port.b.toFixed(2)}`);return}
+  port.pos.push({id:port.n++,pair,type,ep:price,qty,ts:new Date().toLocaleString()});
+  if(type==='BUY')port.b-=cost;
+  saveP();pmsg('s',`✅ ${type} ${qty} ${pair} @ ${price.toFixed(5)}`);renderP();
+}
+function sigTrade(pair,type){document.getElementById('tp').value=pair;doTrade(type)}
+
+function closePos(id){
+  const i=port.pos.findIndex(p=>p.id===id);if(i<0)return;
+  const pos=port.pos[i],cp=gp(pos.pair);
+  const pnl=pos.type==='BUY'?(cp-pos.ep)*pos.qty:(pos.ep-cp)*pos.qty;
+  if(pos.type==='BUY')port.b+=cp*pos.qty;else port.b+=pnl;
+  port.hist.push({...pos,xp:cp,pnl:Math.round(pnl*100)/100,cl:new Date().toLocaleString()});
+  port.pos.splice(i,1);saveP();pmsg('s',`✅ Closed ${pos.pair}. P&L: $${pnl.toFixed(2)}`);renderP();
+}
+
+function resetP(){
+  if(!confirm('Reset to $10,000?'))return;
+  port={b:10000,i:10000,pos:[],hist:[],n:1};saveP();pmsg('s','✅ Reset done');renderP();
+}
+
+function pmsg(t,txt){
+  const el=document.getElementById('pmsg');
+  el.innerHTML=`<div style="padding:10px 16px;border-radius:10px;margin-bottom:16px;background:${t==='s'?'var(--gbg)':'var(--rbg)'};color:${t==='s'?'var(--g)':'var(--r)'};border:1px solid ${t==='s'?'var(--gbd)':'var(--rbd)'};font-size:.82rem">${txt}</div>`;
+  setTimeout(()=>el.innerHTML='',4000);
+}
+
+function renderP(){
+  let upnl=0;
+  port.pos.forEach(p=>{const c=gp(p.pair);upnl+=p.type==='BUY'?(c-p.ep)*p.qty:(p.ep-c)*p.qty});
+  const rpnl=port.hist.reduce((s,t)=>s+(t.pnl||0),0);
+  const eq=port.b+upnl,tp=rpnl+upnl,tpc=(eq-port.i)/port.i*100;
+
+  document.getElementById('psts').innerHTML=`
+    <div class="ps"><div class="sl">Balance</div><div class="sv">$${port.b.toLocaleString('en-US',{minimumFractionDigits:2})}</div></div>
+    <div class="ps"><div class="sl">Equity</div><div class="sv">$${eq.toLocaleString('en-US',{minimumFractionDigits:2})}</div></div>
+    <div class="ps"><div class="sl">Total P&L</div><div class="sv" style="color:${tp>=0?'var(--g)':'var(--r)'}">${tp>=0?'+':''}$${tp.toFixed(2)}</div></div>
+    <div class="ps"><div class="sl">Return</div><div class="sv" style="color:${tpc>=0?'var(--g)':'var(--r)'}">${tpc>=0?'+':''}${tpc.toFixed(2)}%</div></div>`;
+
+  document.getElementById('pcnt').textContent=port.pos.length;
+  const pb=document.getElementById('pbox');
+  if(!port.pos.length)pb.innerHTML='<div class="empty"><div class="ei">📭</div><p>No positions yet. Open your first trade!</p></div>';
+  else pb.innerHTML='<div style="overflow-x:auto"><table class="ptbl"><thead><tr><th>Pair</th><th>Type</th><th>Entry</th><th>Now</th><th>Qty</th><th>P&L</th><th></th></tr></thead><tbody>'+
+    port.pos.map(p=>{const c=gp(p.pair),pnl=p.type==='BUY'?(c-p.ep)*p.qty:(p.ep-c)*p.qty;
+    return`<tr><td style="font-weight:600">${p.pair}</td><td><span class="Cbadge ${p.type==='BUY'?'gb':'rb'}" style="font-size:.6rem">${p.type}</span></td><td>${p.ep.toFixed(5)}</td><td>${c.toFixed(5)}</td><td>${p.qty.toLocaleString()}</td><td style="color:${pnl>=0?'var(--g)':'var(--r)'};font-weight:700">${pnl>=0?'+':''}$${pnl.toFixed(2)}</td><td><button class="xbtn" onclick="closePos(${p.id})">Close</button></td></tr>`}).join('')+'</tbody></table></div>';
+
+  const hb=document.getElementById('hbox');
+  if(!port.hist.length)hb.innerHTML='<div class="empty"><div class="ei">📋</div><p>No history yet.</p></div>';
+  else hb.innerHTML='<div style="overflow-x:auto"><table class="ptbl"><thead><tr><th>Pair</th><th>Type</th><th>Entry</th><th>Exit</th><th>P&L</th><th>When</th></tr></thead><tbody>'+
+    [...port.hist].reverse().map(t=>
+    `<tr><td style="font-weight:600">${t.pair}</td><td><span class="Cbadge ${t.type==='BUY'?'gb':'rb'}" style="font-size:.6rem">${t.type}</span></td><td>${t.ep.toFixed(5)}</td><td>${t.xp.toFixed(5)}</td><td style="color:${t.pnl>=0?'var(--g)':'var(--r)'};font-weight:700">${t.pnl>=0?'+':''}$${t.pnl.toFixed(2)}</td><td style="font-size:.7rem;color:var(--t3)">${t.cl}</td></tr>`).join('')+'</tbody></table></div>';
+
+  const sel=document.getElementById('tp');
+  if(!sel.options.length)PAIRS.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;sel.appendChild(o)});
+}
+
+// === INIT ===
+async function init(){
+  const ok=await fetchLive();
+  if(!ok){
+    document.getElementById('loader').innerHTML='<div style="color:var(--r);font-size:.9rem">❌ Could not fetch live prices. Please check your internet connection and refresh.</div>';
+    return;
+  }
+  await fetchHist();
+  document.getElementById('loader').style.display='none';
+  document.getElementById('v1').style.display='block';
+  renderAll();
+  renderP();
+}
+
+init();
+</script>
+</body></html>
